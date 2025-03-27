@@ -9,10 +9,10 @@ RUN apt-get -y update \
 
 # Install Python dependencies
 WORKDIR /app
-RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install poetry==2.1.1
+RUN pip install poetry==2.1.1
 RUN poetry config virtualenvs.create false
 COPY poetry.lock pyproject.toml /app/
-RUN --mount=type=cache,mode=0755,target=/root/.cache/pypoetry poetry install
+RUN poetry install --no-root
 
 ### Final image
 FROM python:3.12-slim
@@ -47,10 +47,11 @@ WORKDIR /app
 
 ARG STATIC_URL
 ENV STATIC_URL=${STATIC_URL:-/static/}
+ENV PYTHONUNBUFFERED=1
+
 RUN SECRET_KEY=dummy STATIC_URL=${STATIC_URL} python3 manage.py collectstatic --no-input
 
 EXPOSE 8000
-ENV PYTHONUNBUFFERED=1
 
 LABEL org.opencontainers.image.title="saleor/saleor" \
   org.opencontainers.image.description="The commerce engine for modern software development teams." \
